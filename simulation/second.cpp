@@ -84,12 +84,35 @@ int main(int argc, char** argv)
     out_s.open(s_filename, ios::app);
     out_hl.open(hl_filename, ios::app);
     
-    // OPEN INPUT FILES
-    ifstream in_start, in_scalar;
-    string start_filename = path_lvl2 + "/" + "start.txt";
+
+
+    // OPEN INPUT FILES ======================
+    ifstream in_scalar, in_start;
+    
     string scalar_filename = path_lvl1 + "/" + "scalar.txt";
-    in_start.open(start_filename);
+    string start_lvl1_filename = path_lvl1 + "/" + "start.txt";
+    string start_lvl2_filename = path_lvl2 + "/" + "start.txt";
+    
     in_scalar.open(scalar_filename);
+    if(!in_scalar)
+    {
+        cerr << "Error: no scalar file was found" << endl;
+        return 1;
+    }
+
+    in_start.open(start_lvl2_filename);
+    // if start.txt was not found at level 2, try level 1
+    if(!in_start)
+        in_start.open(start_lvl1_filename);
+    // if that fails as well, complain
+    if(!in_start)
+    {
+        cerr << "Error: no start file was found" << endl;
+        return 1;
+    }
+    // OPEN INPUT FILES ======================
+
+
 
     if(sm.mode == "fix")
     {
@@ -113,9 +136,9 @@ int main(int argc, char** argv)
         clog << "Integration step: " << dt << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
 
-        // Write last configuration in start.txt
+        // Write last configuration in start.txt level 2
         ofstream out_start;
-        out_start.open(start_filename);
+        out_start.open(start_lvl2_filename);
         G.print_HL(out_start);
         out_start.close();
     }
@@ -142,9 +165,9 @@ int main(int argc, char** argv)
         clog << "Integration step: " << dt_min << " " << dt_max << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
         
-        // Write last configuration in start.txt
+        // Write last configuration in start.txt level 2
         ofstream out_start;
-        out_start.open(start_filename);
+        out_start.open(start_lvl2_filename);
         G.print_HL(out_start);
         out_start.close();
     }
@@ -171,9 +194,9 @@ int main(int argc, char** argv)
         clog << "Metropolis scale: " << scale << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
         
-        // Write last configuration in start.txt
+        // Write last configuration in start.txt level 2
         ofstream out_start;
-        out_start.open(start_filename);
+        out_start.open(start_lvl2_filename);
         G.print_HL(out_start);
         out_start.close();
     }
