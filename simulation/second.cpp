@@ -16,34 +16,32 @@ using namespace arma;
 int main(int argc, char** argv)
 {
     // ARGUMENT LIST:
-    // The first argument is time(NULL) (it will be used as global seed).
-    // The second argument is the job rank (it will be used as local seed).
-    // The third argument is the g2 value.
-    // The fourth argument is the path to the working directory
+    // The first argument is the seed.
+    // The second argument is the g2 value.
+    // The third argument is the path to the work directory
+    // The fourth argument is the job index
     if(argc != 5)
     {
-        cerr << "Error: need to pass global seed, local rank, g2 value, and path to working directory as arguments." << endl;
+        cerr << "Error: need to pass seed, g2 value, path to work directory, and job index as arguments." << endl;
         return 0;
     }
-    // First two arguments are converted to unsigned long, the third to double.
-    unsigned long global_seed = stoul(argv[1]);
-    unsigned long local_rank = stoul(argv[2]);
-    double g2 = stod(argv[3]);
+    // First argument (seed) is converted to unsigned long, the second (g2) to double.
+    unsigned long seed = stoul(argv[1]);
+    double g2 = stod(argv[2]);
 
 
     // STRING OPERATIONS FOR FILE NAMES
-    string path = argv[4];
-    string path_g2 = path + "/" + cc_to_name(g2);
-    string path_g2_rank = path_g2 + "/" + argv[2];
-    string init_filename = path_g2_rank + "/init.tmp"; 
+    string path_lvl0 = argv[3];
+    string path_lvl1 = path_lvl0 + "/" + cc_to_name(g2);
+    string path_lvl2 = path_lvl1 + "/" + argv[4];
+    string init_filename = path_lvl0 + "/init.txt"; 
 
 
     // RNG:
-    // Initialize random number generator with global+local
-    // (to avoid identical initialization among different jobs).
+    // Initialize random number generator
     gsl_rng* engine = gsl_rng_alloc(gsl_rng_ranlxd2);
-    gsl_rng_set(engine, global_seed+local_rank);
-    clog << "RNG seed: " << global_seed+local_rank << endl << endl;
+    gsl_rng_set(engine, seed);
+    clog << "RNG seed: " << seed << endl << endl;
     
     
     //********* BEGIN PARAMETER INITIALIZATION **********//
@@ -75,27 +73,34 @@ int main(int argc, char** argv)
 
     //********* BEGIN MONTE CARLO **********//
 
-    // Create geometry
+    // CREATE GEOMETRY
     Geom24 G(sm.p, sm.q, sm.dim, g2);
-    G.shuffle(engine);
     clog << G << endl;
 
-    // Open output files
+    // OPEN OUTPUT FILES
     ofstream out_s, out_hl;
-    string s_filename = path_g2_rank + "/" + data_to_name(sm.p, sm.q, sm.dim, g2, "GEOM") + "_S.txt";
-    string hl_filename = path_g2_rank + "/" + data_to_name(sm.p, sm.q, sm.dim, g2, "GEOM") + "_HL.txt";
-    out_s.open(s_filename);
-    out_hl.open(hl_filename);
+    string s_filename = path_lvl2 + "/" + data_to_name(sm.p, sm.q, sm.dim, g2, "GEOM") + "_S.txt";
+    string hl_filename = path_lvl2 + "/" + data_to_name(sm.p, sm.q, sm.dim, g2, "GEOM") + "_HL.txt";
+    out_s.open(s_filename, ios::app);
+    out_hl.open(hl_filename, ios::app);
+    
+    // OPEN INPUT FILES
+    ifstream in_start, in_scalar;
+    string start_filename = path_lvl2 + "/" + "start.txt";
+    string scalar_filename = path_lvl1 + "/" + "scalar.txt";
+    in_start.open(start_filename);
+    in_scalar.open(scalar_filename);
 
     if(sm.mode == "fix")
     {
-        // DUAL AVERAGING
-        double dt = 0.005;
-        clog << "Duav averaging start timestamp: " << time(NULL) << endl;
-        G.HMC_duav(sm.L, dt, sm.iter_duav, engine, sm.AR);
-        clog << "Dual averaging end timestamp: " << time(NULL) << endl;
+        // Read input data
+        G.read_mat(in_start);
+        double dt;
+        in_scalar >> dt;
+        in_start.close();
+        in_scalar.close();
 
-        // SIMULATION
+        // Start simulation
         clog << "Simulation start timestamp: " << time(NULL) << endl;
         double ar = 0;
         for(int i=0; i<sm.samples; ++i)
@@ -107,19 +112,24 @@ int main(int argc, char** argv)
         clog << "Simulation end timestamp: " << time(NULL) << endl;
         clog << "Integration step: " << dt << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
+
+        // Write last configuration in start.txt
+        ofstream out_start;
+        out_start.open(start_filename);
+        G.print_HL(out_start);
+        out_start.close();
     }
 
     else if(sm.mode == "rand")
     {
-        // DUAL AVERAGING
-        double dt_min = 0.005;
-        double dt_max = 0.005;
-        clog << "Duav averaging start timestamp: " << time(NULL) << endl;
-        G.HMC_duav(sm.L, dt_min, sm.iter_duav, engine, sm.AR + sm.dAR);
-        G.HMC_duav(sm.L, dt_max, sm.iter_duav, engine, sm.AR - sm.dAR);
-        clog << "Dual averaging end timestamp: " << time(NULL) << endl;
+        // Read input data
+        G.read_mat(in_start);
+        double dt_min, dt_max;
+        in_scalar >> dt_min >> dt_max;
+        in_start.close();
+        in_scalar.close();
 
-        // SIMULATION
+        // Start simulation
         clog << "Simulation start timestamp: " << time(NULL) << endl;
         double ar = 0;
         for(int i=0; i<sm.samples; ++i)
@@ -131,17 +141,24 @@ int main(int argc, char** argv)
         clog << "Simulation end timestamp: " << time(NULL) << endl;
         clog << "Integration step: " << dt_min << " " << dt_max << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
+        
+        // Write last configuration in start.txt
+        ofstream out_start;
+        out_start.open(start_filename);
+        G.print_HL(out_start);
+        out_start.close();
     }
     
     else if(sm.mode == "mmc")
     {
-        // DUAL AVERAGING
-        double scale = 0.005;
-        clog << "Duav averaging start timestamp: " << time(NULL) << endl;
-        G.MMC_duav(scale, sm.iter_duav, engine, sm.AR);
-        clog << "Dual averaging end timestamp: " << time(NULL) << endl;
+        // Read input data
+        G.read_mat(in_start);
+        double scale;
+        in_scalar >> scale;
+        in_start.close();
+        in_scalar.close();
 
-        // SIMULATION
+        // Start simulation
         clog << "Simulation start timestamp: " << time(NULL) << endl;
         double ar = 0;
         for(int i=0; i<sm.samples; ++i)
@@ -153,13 +170,19 @@ int main(int argc, char** argv)
         clog << "Simulation end timestamp: " << time(NULL) << endl;
         clog << "Metropolis scale: " << scale << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
+        
+        // Write last configuration in start.txt
+        ofstream out_start;
+        out_start.open(start_filename);
+        G.print_HL(out_start);
+        out_start.close();
     }
 
     else
         cerr << "Error: mode not recognized" << endl;
 
 
-    // Close output files
+    // Close files
     out_s.close();
     out_hl.close();
     

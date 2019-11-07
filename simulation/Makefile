@@ -19,18 +19,18 @@ all: rmxeq mkdep mkxeq
 
 # main programs and required modules 
 
-MAIN = simulation
+MAIN = first second
 
 SOURCE = params utils geometry clifford leapfrog HMC_core HMC MMC_core MMC
 
 # search path for modules
 
-VPATH = ../source ../../RandomFuzzyLibrary/source
+VPATH = ../source ../../RFL/source
 
 
 # additional include directories
 
-INCPATH = ../include /home/pmxmd10/gsl/include ../../RandomFuzzyLibrary/include
+INCPATH = ../include /home/pmxmd10/gsl/include ../../RFL/include
 
 
 # additional libraries to be included 
