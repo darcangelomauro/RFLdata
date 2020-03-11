@@ -1,8 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <iomanip>
-#include <cstdlib>
-#include <sys/stat.h>
 #include <ctime>
 #include <armadillo>
 #include <gsl/gsl_rng.h>
@@ -81,8 +78,8 @@ int main(int argc, char** argv)
     ofstream out_s, out_hl;
     string s_filename = path_lvl2 + "/" + data_to_name(sm.p, sm.q, sm.dim, g2, "GEOM") + "_S.txt";
     string hl_filename = path_lvl2 + "/" + data_to_name(sm.p, sm.q, sm.dim, g2, "GEOM") + "_HL.txt";
-    out_s.open(s_filename, ios::app);
-    out_hl.open(hl_filename, ios::app);
+    out_s.open(s_filename);
+    out_hl.open(hl_filename);
     
 
 
@@ -90,8 +87,7 @@ int main(int argc, char** argv)
     ifstream in_scalar, in_start;
     
     string scalar_filename = path_lvl1 + "/" + "scalar.txt";
-    string start_lvl1_filename = path_lvl1 + "/" + "start.txt";
-    string start_lvl2_filename = path_lvl2 + "/" + "start.txt";
+    string start_filename = path_lvl1 + "/" + "start.txt";
     
     in_scalar.open(scalar_filename);
     if(!in_scalar)
@@ -100,11 +96,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    in_start.open(start_lvl2_filename);
-    // if start.txt was not found at level 2, try level 1
-    if(!in_start)
-        in_start.open(start_lvl1_filename);
-    // if that fails as well, complain
+    in_start.open(start_filename);
     if(!in_start)
     {
         cerr << "Error: no start file was found" << endl;
@@ -114,7 +106,7 @@ int main(int argc, char** argv)
 
 
 
-    if(sm.mode == "fix")
+    if(sm.mode == "hmc")
     {
         // Read input data
         G.read_mat(in_start);
@@ -128,48 +120,13 @@ int main(int argc, char** argv)
         double ar = 0;
         for(int i=0; i<sm.samples; ++i)
         {
-            ar += G.HMC(sm.L, dt, sm.iter, engine);
+            ar += G.HMC(sm.L, dt, sm.iter_sim, engine);
             G.print_S(out_s);
             G.print_HL(out_hl);
         }
         clog << "Simulation end timestamp: " << time(NULL) << endl;
         clog << "Integration step: " << dt << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
-
-        // Write last configuration in start.txt level 2
-        ofstream out_start;
-        out_start.open(start_lvl2_filename);
-        G.print_HL(out_start);
-        out_start.close();
-    }
-
-    else if(sm.mode == "rand")
-    {
-        // Read input data
-        G.read_mat(in_start);
-        double dt_min, dt_max;
-        in_scalar >> dt_min >> dt_max;
-        in_start.close();
-        in_scalar.close();
-
-        // Start simulation
-        clog << "Simulation start timestamp: " << time(NULL) << endl;
-        double ar = 0;
-        for(int i=0; i<sm.samples; ++i)
-        {
-            ar += G.HMC(sm.L, dt_min, dt_max, sm.iter, engine);
-            G.print_S(out_s);
-            G.print_HL(out_hl);
-        }
-        clog << "Simulation end timestamp: " << time(NULL) << endl;
-        clog << "Integration step: " << dt_min << " " << dt_max << endl;
-        clog << "Acceptance rate: " << ar/sm.samples << endl;
-        
-        // Write last configuration in start.txt level 2
-        ofstream out_start;
-        out_start.open(start_lvl2_filename);
-        G.print_HL(out_start);
-        out_start.close();
     }
     
     else if(sm.mode == "mmc")
@@ -186,19 +143,13 @@ int main(int argc, char** argv)
         double ar = 0;
         for(int i=0; i<sm.samples; ++i)
         {
-            ar += G.MMC(scale, sm.iter, engine);
+            ar += G.MMC(scale, sm.iter_sim, engine);
             G.print_S(out_s);
             G.print_HL(out_hl);
         }
         clog << "Simulation end timestamp: " << time(NULL) << endl;
         clog << "Metropolis scale: " << scale << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
-        
-        // Write last configuration in start.txt level 2
-        ofstream out_start;
-        out_start.open(start_lvl2_filename);
-        G.print_HL(out_start);
-        out_start.close();
     }
 
     else

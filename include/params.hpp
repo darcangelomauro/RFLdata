@@ -7,30 +7,22 @@
 // Struct that packs the simulation
 // parameters all together (hmc and mmc).
 // 
-//
 // L    =   # of integration steps in leapfrog
 // 
 // AR   =   target acceptance rate
 // 
-// dAR  =   randomize dt in interval [dt_min, dt_max]
-//          such that dt_min gives AR+dAR and
-//          dt_max gives AR-dAR
-//
-//
 // iter_duav    =   # of dual averaging iterations
+//
+// iter_therm   =   # of thermalization iterations
 // 
-// iter         =   # of iterations per sample
+// iter_sim     =   # of iterations per sample
 //
 // samples      =   # of samples to be collected
 //
 //
-// Explanation of MC mode:
-//
-// fix          =   HMC with fixed stepsize
-//
-// rand         =   HMC with random stepsize
-//
-// mmc          =   MMC
+// Available MC modes:
+// hmc
+// mmc
 //
 struct Simul_params
 {
@@ -44,11 +36,11 @@ struct Simul_params
 
     // Acceptance rate
     double AR;
-    double dAR=0;
 
     // Simulation parameters
     int iter_duav;
-    int iter;
+    int iter_therm;
+    int iter_sim;
     int samples;
 
     // MC mode

@@ -19,9 +19,9 @@ all: rmxeq mkdep mkxeq
 
 # main programs and required modules 
 
-MAIN = first second
+MAIN = basic preliminary first second
 
-SOURCE = params utils geometry clifford leapfrog HMC_core HMC MMC_core MMC
+SOURCE = params utils geometry clifford
 
 # search path for modules
 

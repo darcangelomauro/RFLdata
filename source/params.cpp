@@ -38,20 +38,20 @@ bool read_init_stream(istream& in, struct Simul_params& sm)
                 sm.control += temp;
                 in >> sm.AR;
             }
-            else if(temp == "dAR:")
-            {
-                sm.control += temp;
-                in >> sm.dAR;
-            }
             else if(temp == "iter_duav:")
             {
                 sm.control += temp;
                 in >> sm.iter_duav;
             }
-            else if(temp == "iter:")
+            else if(temp == "iter_therm:")
             {
                 sm.control += temp;
-                in >> sm.iter;
+                in >> sm.iter_therm;
+            }
+            else if(temp == "iter_sim:")
+            {
+                sm.control += temp;
+                in >> sm.iter_sim;
             }
             else if(temp == "samples:")
             {
@@ -100,13 +100,18 @@ bool params_validity(const struct Simul_params& sm)
         cerr << "iter_duav not found" << endl;
         return 0;
     }
-    if(sm.control.find("iter:") == std::string::npos)
+    if(sm.control.find("iter_therm:") == std::string::npos)
     {
-        cerr << "iter not found" << endl;
+        cerr << "iter_therm not found" << endl;
+        return 0;
+    }
+    if(sm.control.find("iter_sim:") == std::string::npos)
+    {
+        cerr << "iter_sim not found" << endl;
         return 0;
     }
 
-    if(sm.mode == "fix")
+    if(sm.mode == "hmc")
     {
         if(sm.control.find("L:") == std::string::npos)
         {
@@ -120,25 +125,6 @@ bool params_validity(const struct Simul_params& sm)
         }
     }
     
-    else if(sm.mode == "rand")
-    {
-        if(sm.control.find("L:") == std::string::npos)
-        {
-            cerr << "L not found" << endl;
-            return 0;
-        }
-        if(sm.control.find("AR:") == std::string::npos)
-        {
-            cerr << "AR not found" << endl;
-            return 0;
-        }
-        if(sm.control.find("dAR:") == std::string::npos)
-        {
-            cerr << "dAR not found" << endl;
-            return 0;
-        }
-    }
-
     else if(sm.mode == "mmc")
     {
         if(sm.control.find("AR:") == std::string::npos)

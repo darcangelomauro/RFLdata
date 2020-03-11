@@ -1,8 +1,5 @@
 #include <iostream>
 #include <fstream>
-#include <iomanip>
-#include <cstdlib>
-#include <sys/stat.h>
 #include <ctime>
 #include <armadillo>
 #include <gsl/gsl_rng.h>
@@ -85,7 +82,7 @@ int main(int argc, char** argv)
     out_start.open(start_filename);
     out_scalar.open(scalar_filename);
 
-    if(sm.mode == "fix")
+    if(sm.mode == "hmc")
     {
         double dt = 0.005;
         clog << "Duav averaging start timestamp: " << time(NULL) << endl;
@@ -93,27 +90,13 @@ int main(int argc, char** argv)
         G.HMC_duav(sm.L, dt, sm.iter_duav, engine, sm.AR);
         clog << "Dual averaging end timestamp: " << time(NULL) << endl;
         clog << "Integration step: " << dt << endl;
+        clog << "Thermalization start timestamp: " << time(NULL) << endl;
+        G.HMC(sm.L, dt, sm.iter_therm, engine);
+        clog << "Thermalization end timestamp: " << time(NULL) << endl;
 
         out_scalar << dt;
         G.print_HL(out_start);
     }
-
-    else if(sm.mode == "rand")
-    {
-        double dt_min = 0.005;
-        double dt_max = 0.005;
-        clog << "Duav averaging start timestamp: " << time(NULL) << endl;
-        G.shuffle(engine);
-        G.HMC_duav(sm.L, dt_min, sm.iter_duav, engine, sm.AR + sm.dAR);
-        G.shuffle(engine);
-        G.HMC_duav(sm.L, dt_max, sm.iter_duav, engine, sm.AR - sm.dAR);
-        clog << "Dual averaging end timestamp: " << time(NULL) << endl;
-        clog << "Integration step: " << dt_min << " " << dt_max << endl;
-        
-        out_scalar << dt_min << " " << dt_max;
-        G.print_HL(out_start);
-    }
-    
     else if(sm.mode == "mmc")
     {
         double scale = 0.005;
@@ -122,6 +105,10 @@ int main(int argc, char** argv)
         G.MMC_duav(scale, sm.iter_duav, engine, sm.AR);
         clog << "Dual averaging end timestamp: " << time(NULL) << endl;
         clog << "Metropolis scale: " << scale << endl;
+        clog << "Thermalization start timestamp: " << time(NULL) << endl;
+        G.shuffle(engine);
+        G.MMC(scale, sm.iter_duav, engine);
+        clog << "Thermalization end timestamp: " << time(NULL) << endl;
         
         out_scalar << scale;
         G.print_HL(out_start);
