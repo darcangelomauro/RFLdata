@@ -20,16 +20,39 @@ int main(int argc, char** argv)
     Geom24 G(cin); 
     G.shuffle(engine);
 
-    int Nt, iter;
-    double dt;
-    cout << "insert Nt, dt, iter" << endl;
-    cin >> Nt >> dt >> iter;
+    string mode;
+    cout << "choose mode (hmc or mmc)" << endl;
+    cin >> mode;
 
-    clock_t start = clock();
-    G.HMC_duav(Nt, dt, iter, engine, 0.65);
-    clock_t end = clock();
 
-    cout << "Time: " << double(end-start)/CLOCKS_PER_SEC << " sec" << endl;
+    if(mode == "hmc")
+    {
+        int Nt, iter;
+        double dt;
+        cout << "insert Nt, dt, iter" << endl;
+        cin >> Nt >> dt >> iter;
+
+        clock_t start = clock();
+        G.HMC_duav(Nt, dt, iter, engine, 0.65);
+        clock_t end = clock();
+
+        cout << "Time: " << double(end-start)/CLOCKS_PER_SEC << " sec" << endl;
+    }
+    else if(mode == "mmc")
+    {
+        int iter;
+        double scale;
+        cout << "insert scale, iter" << endl;
+        cin >> scale >> iter;
+
+        clock_t start = clock();
+        G.MMC_duav(scale, iter, engine, 0.232);
+        clock_t end = clock();
+
+        cout << "Time: " << double(end-start)/CLOCKS_PER_SEC << " sec" << endl;
+    }
+    else
+        cout << "mode not recognized" << endl;
 
     // Free memory
     gsl_rng_free(engine);
