@@ -144,6 +144,7 @@ int main(int argc, char** argv)
         for(int i=0; i<sm.samples; ++i)
         {
             ar += G.MMC(scale, sm.iter_sim, engine);
+            G.adjust();
             G.print_S(out_s);
             G.print_HL(out_hl);
         }
