@@ -64,7 +64,7 @@ LDFLAGS = $(addprefix -L,$(LIBPATH)) $(addprefix -l,$(LIBS))
 # rule to make dependencies
 
 $(addsuffix .d,$(PGMS)): %.d: %.cpp Makefile
-	@ $(CC) -MM $(INCDIRS) $< -o $@
+	@ $(CC) -MM $(INCDIRS) $< $(CFLAGS) -o $@
 
 
 # rule to compile source programs

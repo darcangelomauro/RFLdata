@@ -1,5 +1,6 @@
 #include <iostream>
 #include <ctime>
+#include <chrono>
 #include <armadillo>
 #include <gsl/gsl_rng.h>
 #include "geometry.hpp"
@@ -7,6 +8,7 @@
 #include "params.hpp"
 
 using namespace std;
+using namespace std::chrono;
 using namespace arma;
 
 int main(int argc, char** argv)
@@ -32,11 +34,13 @@ int main(int argc, char** argv)
         cout << "insert Nt, dt, iter" << endl;
         cin >> Nt >> dt >> iter;
 
-        clock_t start = clock();
+        auto start = high_resolution_clock::now();
         G.HMC_duav(Nt, dt, iter, engine, 0.65);
-        clock_t end = clock();
+        auto end = high_resolution_clock::now();
+        
+        auto duration = duration_cast<milliseconds>(end-start);
 
-        cout << "Time: " << double(end-start)/CLOCKS_PER_SEC << " sec" << endl;
+        cout << "Time: " << duration.count()/1000. << " sec" << endl;
     }
     else if(mode == "mmc")
     {
@@ -45,11 +49,13 @@ int main(int argc, char** argv)
         cout << "insert scale, iter" << endl;
         cin >> scale >> iter;
 
-        clock_t start = clock();
+        auto start = high_resolution_clock::now();
         G.MMC_duav(scale, iter, engine, 0.232);
-        clock_t end = clock();
+        auto end = high_resolution_clock::now();
 
-        cout << "Time: " << double(end-start)/CLOCKS_PER_SEC << " sec" << endl;
+        auto duration = duration_cast<milliseconds>(end-start);
+        
+        cout << "Time: " << duration.count()/1000. << " sec" << endl;
     }
     else
         cout << "mode not recognized" << endl;
