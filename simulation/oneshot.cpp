@@ -75,11 +75,13 @@ int main(int argc, char** argv)
     clog << G << endl;
 
     // OPEN OUTPUT FILES
-    ofstream out_s, out_hl;
+    ofstream out_s, out_hl, out_end;
     string s_filename = path_lvl2 + "/" + data_to_name(sm.p, sm.q, sm.dim, g2, "GEOM") + "_S.txt";
     string hl_filename = path_lvl2 + "/" + data_to_name(sm.p, sm.q, sm.dim, g2, "GEOM") + "_HL.txt";
+    string end_filename = path_lvl2 + "/end.txt";
     out_s.open(s_filename);
     out_hl.open(hl_filename);
+    out_end.open(end_filename);
     
 
 
@@ -140,6 +142,8 @@ int main(int argc, char** argv)
         clog << "Simulation end timestamp: " << time(NULL) << endl;
         clog << "Integration step: " << dt << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
+        
+        G.print_HL(out_end);
     }
     
     else if(sm.mode == "mmc")
@@ -177,6 +181,8 @@ int main(int argc, char** argv)
         clog << "Simulation end timestamp: " << time(NULL) << endl;
         clog << "Metropolis scale: " << scale << endl;
         clog << "Acceptance rate: " << ar/sm.samples << endl;
+        
+        G.print_HL(out_end);
     }
 
     else
@@ -186,6 +192,7 @@ int main(int argc, char** argv)
     // Close files
     out_s.close();
     out_hl.close();
+    out_end.close();
     
     //********* END MONTE CARLO **********//
 
