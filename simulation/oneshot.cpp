@@ -115,6 +115,12 @@ int main(int argc, char** argv)
         in_start.close();
         in_scalar.close();
 
+        // Start dual averaging
+        clog << "Duav averaging start timestamp: " << time(NULL) << endl;
+        G.HMC_duav(sm.L, dt, sm.iter_duav, engine, sm.AR);
+        G.adjust();
+        clog << "Dual averaging end timestamp: " << time(NULL) << endl;
+        
         // Start thermalization
         clog << "Thermalization start timestamp: " << time(NULL) << endl;
         G.HMC(sm.L, dt, sm.iter_therm, engine);
@@ -145,10 +151,16 @@ int main(int argc, char** argv)
         in_start.close();
         in_scalar.close();
 
+        // Start dual averaging
+        clog << "Duav averaging start timestamp: " << time(NULL) << endl;
+        G.MMC_duav(scale, sm.iter_duav, engine, sm.AR);
+        G.adjust();
+        clog << "Dual averaging end timestamp: " << time(NULL) << endl;
+        
         // Start thermalization
         clog << "Thermalization start timestamp: " << time(NULL) << endl;
         G.shuffle(engine);
-        G.MMC(scale, sm.iter_duav, engine);
+        G.MMC(scale, sm.iter_therm, engine);
         G.adjust();
         clog << "Thermalization end timestamp: " << time(NULL) << endl;
         

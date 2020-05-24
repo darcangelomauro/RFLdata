@@ -110,7 +110,7 @@ int main(int argc, char** argv)
         clog << "Metropolis scale: " << scale << endl;
         clog << "Thermalization start timestamp: " << time(NULL) << endl;
         G.shuffle(engine);
-        G.MMC(scale, sm.iter_duav, engine);
+        G.MMC(scale, sm.iter_therm, engine);
         G.adjust();
         clog << "Thermalization end timestamp: " << time(NULL) << endl;
         
