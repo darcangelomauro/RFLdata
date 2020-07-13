@@ -51,7 +51,7 @@ struct Simul_params
     std::string mode;
 
     // Integrator
-    std::string integrator;
+    std::string integrator = "leapfrog";
 
     // Control string
     std::string control;
