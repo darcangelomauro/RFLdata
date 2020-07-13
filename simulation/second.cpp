@@ -65,7 +65,7 @@ int main(int argc, char** argv)
         return 1;
     }
     
-    if(sm.integrator != "lepfrog" || sm.integrator != "omelyan")
+    if(sm.integrator != "leapfrog" && sm.integrator != "omelyan")
     {
         cerr << "Error: integrator " + sm.integrator + " is not supported." << endl;
         return 1;
