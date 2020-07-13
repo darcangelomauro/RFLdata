@@ -37,17 +37,17 @@ int main(int argc, char** argv)
     // thermalize first
     double tgt = 0.8;
     double dt = 0.000001;
-    G.HMC_duav(10, dt, 10000, engine, tgt);
+    G.HMC_duav(10, dt, 10000, engine, tgt, "leapfrog");
     cout << "dual averaging complete" << endl;
     cout << "dual averaged dt: " << dt << endl;
-    double ar = G.HMC(10, dt, 10000, engine);
+    double ar = G.HMC(10, dt, 10000, engine, "leapfrog");
     cout << "thermalization complete" << endl;
     cout << "acceptance rate: " << ar << endl;
     
     
     for(int i=1; i<1000; ++i)
     {
-        G.HMC(10, dt, 1000, engine);
+        G.HMC(10, dt, 1000, engine, "leapfrog");
         G.print_S(out_S);
         G.print_HL(out_HL);
     }

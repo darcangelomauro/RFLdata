@@ -63,6 +63,11 @@ bool read_init_stream(istream& in, struct Simul_params& sm)
                 sm.control += temp;
                 in >> sm.mode;
             }
+            else if(temp == "integrator:")
+            {
+                sm.control += temp;
+                in >> sm.mode;
+            }
         }
 
         success = true;
@@ -121,6 +126,11 @@ bool params_validity(const struct Simul_params& sm)
         if(sm.control.find("AR:") == std::string::npos)
         {
             cerr << "AR not found" << endl;
+            return 0;
+        }
+        if(sm.control.find("integrator:") == std::string::npos)
+        {
+            cerr << "integrator not found" << endl;
             return 0;
         }
     }

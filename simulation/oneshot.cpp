@@ -64,6 +64,12 @@ int main(int argc, char** argv)
         cerr << "Error: file " + init_filename + " does not contain the necessary parameters." << endl;
         return 1;
     }
+    
+    if(sm.integrator != "lepfrog" || sm.integrator != "omelyan")
+    {
+        cerr << "Error: integrator " + sm.integrator + " is not supported." << endl;
+        return 1;
+    }
     //********* END PARAMETER INITIALIZATION **********//
 
 
@@ -119,13 +125,13 @@ int main(int argc, char** argv)
 
         // Start dual averaging
         clog << "Duav averaging start timestamp: " << time(NULL) << endl;
-        G.HMC_duav(sm.L, dt, sm.iter_duav, engine, sm.AR);
+        G.HMC_duav(sm.L, dt, sm.iter_duav, engine, sm.AR, sm.integrator);
         G.adjust();
         clog << "Dual averaging end timestamp: " << time(NULL) << endl;
         
         // Start thermalization
         clog << "Thermalization start timestamp: " << time(NULL) << endl;
-        G.HMC(sm.L, dt, sm.iter_therm, engine);
+        G.HMC(sm.L, dt, sm.iter_therm, engine, sm.integrator);
         G.adjust();
         clog << "Thermalization end timestamp: " << time(NULL) << endl;
 
@@ -134,7 +140,7 @@ int main(int argc, char** argv)
         double ar = 0;
         for(int i=0; i<sm.samples; ++i)
         {
-            ar += G.HMC(sm.L, dt, sm.iter_sim, engine);
+            ar += G.HMC(sm.L, dt, sm.iter_sim, engine, sm.integrator);
             G.adjust();
             G.print_S(out_s);
             G.print_HL(out_hl);

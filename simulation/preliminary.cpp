@@ -26,6 +26,9 @@ int main(int argc, char** argv)
     cout << "choose mode (hmc or mmc)" << endl;
     cin >> mode;
 
+    string integrator;
+    cout << "choose integrator (leapfrog or omelyan)" << endl;
+    cin >> integrator;
 
     if(mode == "hmc")
     {
@@ -35,7 +38,7 @@ int main(int argc, char** argv)
         cin >> Nt >> dt >> iter;
 
         auto start = high_resolution_clock::now();
-        G.HMC_duav(Nt, dt, iter, engine, 0.65);
+        G.HMC_duav(Nt, dt, iter, engine, 0.8, integrator);
         auto end = high_resolution_clock::now();
         
         auto duration = duration_cast<milliseconds>(end-start);

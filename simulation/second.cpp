@@ -64,6 +64,12 @@ int main(int argc, char** argv)
         cerr << "Error: file " + init_filename + " does not contain the necessary parameters." << endl;
         return 1;
     }
+    
+    if(sm.integrator != "lepfrog" || sm.integrator != "omelyan")
+    {
+        cerr << "Error: integrator " + sm.integrator + " is not supported." << endl;
+        return 1;
+    }
     //********* END PARAMETER INITIALIZATION **********//
 
 
@@ -120,7 +126,7 @@ int main(int argc, char** argv)
         double ar = 0;
         for(int i=0; i<sm.samples; ++i)
         {
-            ar += G.HMC(sm.L, dt, sm.iter_sim, engine);
+            ar += G.HMC(sm.L, dt, sm.iter_sim, engine, sm.integrator);
             G.adjust();
             G.print_S(out_s);
             G.print_HL(out_hl);

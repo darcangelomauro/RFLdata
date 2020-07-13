@@ -24,6 +24,10 @@
 // hmc
 // mmc
 //
+// Available integrators:
+// lepfrog
+// omelyan
+//
 struct Simul_params
 {
     // Geometric parameters
@@ -45,6 +49,9 @@ struct Simul_params
 
     // MC mode
     std::string mode;
+
+    // Integrator
+    std::string integrator;
 
     // Control string
     std::string control;
